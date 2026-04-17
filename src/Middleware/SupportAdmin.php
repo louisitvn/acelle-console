@@ -2,10 +2,14 @@
 
 namespace Acelle\Console\Middleware;
 
-use App\Model\Setting;
 use Closure;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Require an authenticated admin (via api_token) on support API endpoints.
+ * Does NOT check the support-debug feature flag — pair with SupportFlag
+ * middleware when the endpoint should be gated on the flag.
+ */
 class SupportAdmin
 {
     public function handle($request, Closure $next)
@@ -23,17 +27,6 @@ class SupportAdmin
 
         if ($user->admin && !$user->admin->isActive()) {
             return response()->json(['error' => 'admin_disabled'], 403);
-        }
-
-        try {
-            $enabled = Setting::isYes('support_debug_enabled');
-        } catch (\Throwable $e) {
-            // Default to enabled if setting missing (first-install path).
-            $enabled = true;
-        }
-
-        if (!$enabled) {
-            return response()->json(['error' => 'feature_disabled'], 503);
         }
 
         return $next($request);

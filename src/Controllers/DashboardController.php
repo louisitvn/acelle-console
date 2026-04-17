@@ -3,8 +3,8 @@
 namespace Acelle\Console\Controllers;
 
 use Acelle\Console\Models\SupportDebugLog;
+use Acelle\Console\Support\DebugFlag;
 use App\Http\Controllers\Controller;
-use App\Model\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -14,12 +14,7 @@ class DashboardController extends Controller
     {
         $admin = $request->user()->admin;
         $apiToken = $request->user()->api_token;
-
-        try {
-            $enabled = Setting::isYes('support_debug_enabled');
-        } catch (\Throwable $e) {
-            $enabled = true;
-        }
+        $enabled = DebugFlag::isEnabled();
 
         $baseUrl = rtrim(config('app.url'), '/');
         $endpoints = [
@@ -42,12 +37,11 @@ class DashboardController extends Controller
 
     public function toggle(Request $request)
     {
-        $value = $request->input('enabled') ? 'yes' : 'no';
-        Setting::set('support_debug_enabled', $value);
+        $enabled = DebugFlag::set((bool) $request->input('enabled'));
 
         return redirect()
             ->route('plugin.acelle.console.dashboard')
-            ->with('alert-success', trans('console::messages.flash.toggle_' . $value));
+            ->with('alert-success', trans('console::messages.flash.toggle_' . ($enabled ? 'yes' : 'no')));
     }
 
     public function logs(Request $request)
@@ -72,11 +66,7 @@ class DashboardController extends Controller
             $user->save();
         }
 
-        try {
-            $enabled = Setting::isYes('support_debug_enabled');
-        } catch (\Throwable $e) {
-            $enabled = true;
-        }
+        $enabled = DebugFlag::isEnabled();
 
         $baseUrl = rtrim(config('app.url'), '/') . '/api/v1/support';
 

@@ -55,4 +55,5 @@
     'copied' => 'Copied!',
   ),
   'view_all_logs' => 'View all audit logs',
+  'open_terminal' => 'Open Terminal',
 ) ?>

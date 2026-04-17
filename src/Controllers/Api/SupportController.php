@@ -5,8 +5,8 @@ namespace Acelle\Console\Controllers\Api;
 use Acelle\Console\Models\SupportDebugLog;
 use Acelle\Console\Services\SupportBundleService;
 use Acelle\Console\Services\SupportDebugService;
+use Acelle\Console\Support\DebugFlag;
 use App\Http\Controllers\Controller;
-use App\Model\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -132,13 +132,19 @@ class SupportController extends Controller
         ]);
     }
 
+    public function toggle(Request $request)
+    {
+        $enabled = DebugFlag::set((bool) $request->input('enabled'));
+
+        return response()->json([
+            'status' => 'success',
+            'enabled' => $enabled,
+        ]);
+    }
+
     private function featureEnabled(): bool
     {
-        try {
-            return Setting::isYes('support_debug_enabled');
-        } catch (Throwable $e) {
-            return true;
-        }
+        return DebugFlag::isEnabled();
     }
 
     private function auditLog(Request $request, array $data): void

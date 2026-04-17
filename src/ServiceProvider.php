@@ -33,6 +33,7 @@ class ServiceProvider extends Base
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'console');
 
         $this->app['router']->aliasMiddleware('support.admin', Middleware\SupportAdmin::class);
+        $this->app['router']->aliasMiddleware('support.flag', Middleware\SupportFlag::class);
         $this->app['router']->aliasMiddleware('console.active', Middleware\ConsolePluginActive::class);
         $this->loadRoutesFrom(__DIR__.'/../routes.php');
 

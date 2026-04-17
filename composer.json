@@ -1,0 +1,20 @@
+{
+    "name": "acelle/console",
+    "title": "Support Console",
+    "version": "1.0.0",
+    "app_version": "4.0.24",
+    "description": "Remote support & diagnostic console — exposes /api/v1/support/* endpoints and a browser-based terminal UI for Acelle support engineering.",
+    "autoload": {
+        "psr-4": {
+            "Acelle\\Console\\": "src/"
+        }
+    },
+    "extra": {
+        "setting-route": "\\Acelle\\Console\\Controllers\\DashboardController@index",
+        "laravel": {
+            "providers": [
+                "Acelle\\Console\\ServiceProvider"
+            ]
+        }
+    }
+}

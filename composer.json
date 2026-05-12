@@ -1,7 +1,7 @@
 {
     "name": "acelle/console",
     "title": "Support Console",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "app_version": "4.0.24",
     "description": "Remote support & diagnostic console — exposes /api/v1/support/* endpoints and a browser-based terminal UI for Acelle support engineering.",
     "autoload": {

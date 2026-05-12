@@ -201,9 +201,12 @@
 <script>
 (function () {
     const SUPPORT = {
-        token: @json($apiToken),
-        base:  @json($baseUrl),
-        user:  @json(['id' => $user->id, 'email' => $user->email]),
+        token:  @json($apiToken),
+        base:   @json($baseUrl),
+        // Whoami is a core endpoint (`/api/v1/whoami`), not under the plugin's
+        // `/api/v1/support/*` prefix — needs its own absolute URL.
+        whoami: @json($whoamiUrl),
+        user:   @json(['id' => $user->id, 'email' => $user->email]),
     };
 
     const $output  = document.getElementById('output');
@@ -347,6 +350,41 @@
         }
     }
 
+    // Whoami is hit as an absolute URL because it lives in core, not under
+    // SUPPORT.base (`/api/v1/support`). Keeps `api()` simple — only this one
+    // built-in command needs to escape the prefix.
+    async function runWhoami(label) {
+        pending = new AbortController();
+        $bar.classList.add('pending');
+        $input.disabled = true;
+        try {
+            const res = await fetch(SUPPORT.whoami, {
+                headers: {
+                    'Authorization': 'Bearer ' + SUPPORT.token,
+                    'Accept': 'application/json',
+                },
+                signal: pending.signal,
+            });
+            const text = await res.text();
+            let json;
+            try { json = JSON.parse(text); } catch (e) { json = { _raw: text }; }
+            if (!res.ok) {
+                writeText('✖ ' + ((json && json.error) || ('HTTP ' + res.status)), 'err');
+                return;
+            }
+            writeText(JSON.stringify(json, null, 2), 'json');
+            if (label) write('<span class="meta">— ' + esc(label) + '</span>', 'meta');
+        } catch (e) {
+            if (e.name === 'AbortError') writeText('[aborted]', 'hint');
+            else writeText('✖ network error: ' + e.message, 'err');
+        } finally {
+            $bar.classList.remove('pending');
+            $input.disabled = false;
+            pending = null;
+            $input.focus();
+        }
+    }
+
     // ─── built-in commands ──────────────────────────────────────────
 
     function builtinHelp() {
@@ -360,7 +398,7 @@
             '  :redact on|off      toggle output redaction',
             '',
             '<span class="meta">Meta commands (hit support API):</span>',
-            '  :whoami             GET /whoami',
+            '  :whoami             GET /api/v1/whoami  (core)',
             '  :bundle             GET /bundle (diagnostic snapshot)',
             '  :logs [N]           GET /logs?limit=N',
             '',
@@ -404,7 +442,7 @@
             return true;
         }
 
-        if (lc === ':whoami') { runGet('/whoami', 'whoami'); return true; }
+        if (lc === ':whoami') { runWhoami('whoami'); return true; }
         if (lc === ':bundle') { runGet('/bundle', 'bundle snapshot'); return true; }
 
         if (m = cmd.match(/^:logs(?:\s+(\d+))?$/i)) {
@@ -524,7 +562,7 @@
 
     banner();
     (async function () {
-        await runGet('/whoami', 'connected');
+        await runWhoami('connected');
         $input.focus();
     })();
 })();

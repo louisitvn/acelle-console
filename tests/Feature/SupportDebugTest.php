@@ -89,14 +89,18 @@ afterEach(function () {
     DB::table('users')->where('email', 'like', 'pest-support%@example.com')->delete();
 });
 
+// Middleware behaviour is exercised via /bundle — `whoami` used to live here
+// but moved to core (`/api/v1/whoami`). /bundle goes through the same
+// auth:api + console.active + support.admin + support.flag chain.
+
 test('missing authorization header returns 401', function () {
-    $response = $this->getJson('/api/v1/support/whoami');
+    $response = $this->getJson('/api/v1/support/bundle');
     expect($response->status())->toBe(401);
 });
 
 test('invalid bearer token returns 401', function () {
     $response = $this->withHeaders(['Authorization' => 'Bearer totally-invalid-token'])
-        ->getJson('/api/v1/support/whoami');
+        ->getJson('/api/v1/support/bundle');
     expect($response->status())->toBe(401);
 });
 
@@ -104,7 +108,7 @@ test('non-admin api_token returns 403', function () {
     [$user, $token] = supportMakeNonAdminUser();
 
     $response = $this->withHeaders(['Authorization' => 'Bearer ' . $token])
-        ->getJson('/api/v1/support/whoami');
+        ->getJson('/api/v1/support/bundle');
 
     expect($response->status())->toBe(403);
     expect($response->json('error'))->toBe('admin_required');
@@ -114,23 +118,10 @@ test('admin token with feature disabled returns 503', function () {
     Setting::set('support_debug_enabled', 'no');
 
     $response = $this->withHeaders(['Authorization' => 'Bearer ' . $this->adminToken])
-        ->getJson('/api/v1/support/whoami');
+        ->getJson('/api/v1/support/bundle');
 
     expect($response->status())->toBe(503);
     expect($response->json('error'))->toBe('feature_disabled');
-});
-
-test('whoami returns user instance endpoints feature_enabled', function () {
-    $response = $this->withHeaders(['Authorization' => 'Bearer ' . $this->adminToken])
-        ->getJson('/api/v1/support/whoami');
-
-    expect($response->status())->toBe(200);
-    $json = $response->json();
-    expect($json)->toHaveKeys(['user', 'instance', 'feature_enabled', 'endpoints']);
-    expect($json['user']['id'])->toBe($this->adminUser->id);
-    expect($json['user']['is_admin'])->toBeTrue();
-    expect($json['feature_enabled'])->toBeTrue();
-    expect($json['endpoints'])->toHaveKeys(['whoami', 'bundle', 'exec', 'logs']);
 });
 
 test('bundle returns json with expected top-level keys', function () {

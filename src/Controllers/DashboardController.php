@@ -16,9 +16,16 @@ class DashboardController extends Controller
         $apiToken = $request->user()->api_token;
         $enabled = DebugFlag::isEnabled();
 
-        $baseUrl = rtrim(config('app.url'), '/');
+        // Use request-host-aware url() rather than config('app.url') — APP_URL
+        // is often set to the canonical/production hostname while the same
+        // installation may be reached via staging/SIT/IP hosts. The terminal JS
+        // does a same-origin fetch from the page, so the API must resolve to
+        // the SAME hostname the user loaded the page from.
+        $baseUrl = rtrim(url('/'), '/');
         $endpoints = [
-            'whoami' => $baseUrl . '/api/v1/support/whoami',
+            // `whoami` is core (`/api/v1/whoami`), not under the plugin's
+            // `/support/*` prefix — example URL must reflect that.
+            'whoami' => $baseUrl . '/api/v1/whoami',
             'bundle' => $baseUrl . '/api/v1/support/bundle',
             'exec'   => $baseUrl . '/api/v1/support/exec',
             'logs'   => $baseUrl . '/api/v1/support/logs',
@@ -68,13 +75,21 @@ class DashboardController extends Controller
 
         $enabled = DebugFlag::isEnabled();
 
-        $baseUrl = rtrim(config('app.url'), '/') . '/api/v1/support';
+        // url('/api/v1/support') resolves against the actual request host
+        // (Laravel's URL generator uses Request::root()). config('app.url') is
+        // not safe here — instances often have APP_URL stale (canonical
+        // production URL) while being accessed via staging/IP/SIT hostnames,
+        // which would make the JS fetch hit a different origin (404 / CORS).
+        $baseUrl = rtrim(url('/api/v1/support'), '/');
+        // whoami lives in core, not under /support — JS hits this directly.
+        $whoamiUrl = rtrim(url('/api/v1/whoami'), '/');
 
         return view('console::terminal', [
-            'apiToken' => $user->api_token,
-            'baseUrl'  => $baseUrl,
-            'user'     => $user,
-            'enabled'  => $enabled,
+            'apiToken'  => $user->api_token,
+            'baseUrl'   => $baseUrl,
+            'whoamiUrl' => $whoamiUrl,
+            'user'      => $user,
+            'enabled'   => $enabled,
         ]);
     }
 }

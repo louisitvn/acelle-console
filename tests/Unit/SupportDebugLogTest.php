@@ -87,5 +87,4 @@ test('type constants match string values', function () {
     expect(SupportDebugLog::TYPE_TINKER)->toBe('tinker');
     expect(SupportDebugLog::TYPE_ARTISAN)->toBe('artisan');
     expect(SupportDebugLog::TYPE_BUNDLE)->toBe('bundle');
-    expect(SupportDebugLog::TYPE_WHOAMI)->toBe('whoami');
 });

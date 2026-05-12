@@ -13,32 +13,6 @@ use Throwable;
 
 class SupportController extends Controller
 {
-    public function whoami(Request $request)
-    {
-        $user = Auth::guard('api')->user();
-        $versionPath = base_path('VERSION');
-        $version = is_readable($versionPath) ? trim((string) file_get_contents($versionPath)) : null;
-
-        return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'email' => $user->email,
-                'is_admin' => !is_null($user->admin),
-            ],
-            'instance' => [
-                'url' => config('app.url'),
-                'version' => $version,
-            ],
-            'feature_enabled' => $this->featureEnabled(),
-            'endpoints' => [
-                'whoami' => url('/api/v1/support/whoami'),
-                'bundle' => url('/api/v1/support/bundle'),
-                'exec'   => url('/api/v1/support/exec'),
-                'logs'   => url('/api/v1/support/logs'),
-            ],
-        ]);
-    }
-
     public function bundle(Request $request, SupportBundleService $service)
     {
         $start = microtime(true);
@@ -140,11 +114,6 @@ class SupportController extends Controller
             'status' => 'success',
             'enabled' => $enabled,
         ]);
-    }
-
-    private function featureEnabled(): bool
-    {
-        return DebugFlag::isEnabled();
     }
 
     private function auditLog(Request $request, array $data): void

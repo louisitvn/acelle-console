@@ -24,12 +24,14 @@ Route::group([
 //
 // Turning support_debug_enabled off → all 4 endpoints below return 503.
 // ──────────────────────────────────────────────────────────────────────────────
+// `whoami` lives in core (`/api/v1/whoami`), NOT here — moved out so support
+// tooling like `php artisan remote:upgrade --min-version=X` can read the
+// instance version with just an admin api_token, no plugin install required.
 Route::group([
     'prefix' => 'api/v1/support',
     'middleware' => ['api', 'auth:api', 'console.active', 'support.admin', 'support.flag'],
     'namespace' => '\Acelle\Console\Controllers\Api',
 ], function () {
-    Route::get('whoami', 'SupportController@whoami');
     Route::get('bundle', 'SupportController@bundle');
     Route::post('exec', 'SupportController@exec');
     Route::get('logs', 'SupportController@logs');

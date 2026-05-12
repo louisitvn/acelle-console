@@ -11,7 +11,6 @@ class SupportDebugLog extends Model
     public const TYPE_TINKER = 'tinker';
     public const TYPE_ARTISAN = 'artisan';
     public const TYPE_BUNDLE = 'bundle';
-    public const TYPE_WHOAMI = 'whoami';
 
     public const COMMAND_CAP_BYTES = 60000;
 

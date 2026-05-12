@@ -28,7 +28,7 @@
                 <div style="display:flex;gap:var(--space-2);align-items:center;">
                     <select name="type" class="mc-form-select" style="max-width:220px;" onchange="this.form.submit()">
                         <option value="">{{ trans('console::messages.audit.column_type') }} — all</option>
-                        @foreach (['shell', 'tinker', 'artisan', 'bundle', 'whoami'] as $t)
+                        @foreach (['shell', 'tinker', 'artisan', 'bundle'] as $t)
                             <option value="{{ $t }}" @if (request('type') === $t) selected @endif>{{ $t }}</option>
                         @endforeach
                     </select>
